@@ -741,7 +741,21 @@ bool common_skipWindow(Window w,
                        unsigned long current_desktop,
                        unsigned long window_desktop)
 {
+    Atom *state, a_sticky;
+    int i;
+    long unsigned int state_propsize;
     quad wq;                    // window's absolute coordinates
+
+    state =
+        (Atom *) get_x_property(w, XA_ATOM, "_NET_WM_STATE", &state_propsize);
+    a_sticky = XInternAtom(dpy, "_NET_WM_STATE_STICKY", True);
+
+    for(i = 0; i < state_propsize / sizeof(Atom); i++) {
+        if(state[i] == a_sticky) {
+            msg(1, "%lx: window with _NET_WM_STATE_STICKY state found", w);
+            return false;
+        }
+    }
 
     if (g.option_desktop == DESK_CURRENT
         && current_desktop != window_desktop
